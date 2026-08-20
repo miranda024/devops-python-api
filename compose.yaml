@@ -1,0 +1,6 @@
+services:
+  api:
+    build: .
+    image: devops-python-api:local
+    ports:
+      - "8000:8000"
