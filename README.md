@@ -1,4 +1,4 @@
-# API Python para demonstrar DevOps
+git # API Python para demonstrar DevOps
 
 Repositório didático para apresentar, em uma única aplicação, três ideias que se conectam:
 
@@ -15,6 +15,9 @@ O projeto utiliza FastAPI, pytest, Ruff, GitHub Actions e Docker. Os dados ficam
 - O Dockerfile descreve o ambiente necessário para executar a API.
 - O pipeline só testa o container depois que qualidade e testes foram aprovados.
 - Logs, cobertura e relatórios funcionam como evidências, não apenas como mensagens coloridas.
+
+
+
 
 ## Estrutura do repositório
 
