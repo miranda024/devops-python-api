@@ -20,6 +20,13 @@ def test_health_returns_version() -> None:
     assert response.json() == {"status": "ok", "version": "1.0.0"}
 
 
+def test_root_points_to_docs() -> None:
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.json()["docs"] == "/docs"
+
+
 def test_list_starts_empty() -> None:
     response = client.get("/tasks")
 
