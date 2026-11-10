@@ -17,7 +17,7 @@ def test_health_returns_version() -> None:
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "1.0.0"}
+    assert response.json() == {"status": "ok", "version": "1.1.0"}
 
 
 def test_version_without_commit_returns_local(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -26,7 +26,7 @@ def test_version_without_commit_returns_local(monkeypatch: pytest.MonkeyPatch) -
     response = client.get("/version")
 
     assert response.status_code == 200
-    assert response.json() == {"version": "1.0.0", "commit": "local"}
+    assert response.json() == {"version": "1.1.0", "commit": "local"}
 
 
 def test_version_shows_deployed_commit(monkeypatch: pytest.MonkeyPatch) -> None:
