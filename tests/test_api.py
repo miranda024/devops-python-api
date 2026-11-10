@@ -20,6 +20,23 @@ def test_health_returns_version() -> None:
     assert response.json() == {"status": "ok", "version": "1.0.0"}
 
 
+def test_version_without_commit_returns_local(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("APP_COMMIT", raising=False)
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.json() == {"version": "1.0.0", "commit": "local"}
+
+
+def test_version_shows_deployed_commit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("APP_COMMIT", "abc1234")
+
+    response = client.get("/version")
+
+    assert response.json()["commit"] == "abc1234"
+
+
 def test_root_points_to_docs() -> None:
     response = client.get("/")
 

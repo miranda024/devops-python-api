@@ -1,0 +1,118 @@
+name: Deploy na EC2
+
+# Executa somente quando a main é atualizada (merge de um Pull Request aprovado).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Evita dois deploys simultâneos na mesma instância.
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: repo/trabalho
+
+jobs:
+  tests:
+    name: Testes automatizados
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter o código
+        uses: actions/checkout@v6
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependências
+        run: python -m pip install --requirement requirements-dev.txt
+
+      - name: Verificar análise estática
+        run: ruff check .
+
+      - name: Verificar formatação
+        run: ruff format --check .
+
+      - name: Executar testes
+        run: pytest --cov=app --cov-report=term-missing
+
+  deploy:
+    name: Build, publicação no ECR e deploy na EC2
+    # Só roda se o job de testes terminar com sucesso.
+    needs: tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter o código
+        uses: actions/checkout@v6
+
+      - name: Configurar credenciais da AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login no Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construir e publicar a imagem
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build --tag "$IMAGE" .
+          docker push "$IMAGE"
+          echo "Imagem publicada: $ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Preparar a chave SSH
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/ec2.pem
+          chmod 600 ~/.ssh/ec2.pem
+
+      - name: Implantar na EC2
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/ec2.pem -o StrictHostKeyChecking=accept-new \
+            "$EC2_USER@$EC2_HOST" \
+            "bash -s" -- "$REGISTRY" "$ECR_REPOSITORY" "$IMAGE_TAG" "$AWS_REGION" \
+            < scripts/deploy.sh
+
+      - name: Verificar a API publicada
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          for attempt in {1..15}; do
+            if curl --fail --silent "http://$EC2_HOST/version"; then
+              echo
+              echo "API respondendo em http://$EC2_HOST"
+              exit 0
+            fi
+            echo "Tentativa ${attempt}: API ainda não respondeu"
+            sleep 2
+          done
+          exit 1
+
+      - name: Remover a chave SSH do runner
+        if: always()
+        run: rm -f ~/.ssh/ec2.pem

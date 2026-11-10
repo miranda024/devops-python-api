@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -37,6 +39,13 @@ def health() -> dict[str, str]:
     """Endpoint usado por pessoas, containers e pipelines para verificar a API."""
 
     return {"status": "ok", "version": app.version}
+
+
+@app.get("/version")
+def version() -> dict[str, str]:
+    """Mostra a versão da aplicação e o commit que gerou a imagem implantada."""
+
+    return {"version": app.version, "commit": os.getenv("APP_COMMIT", "local")}
 
 
 @app.get("/tasks", response_model=list[Task])

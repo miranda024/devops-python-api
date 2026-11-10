@@ -1,10 +1,11 @@
 name: CI Python
 
+# Valida cada Pull Request destinado à main (abertura e novos commits).
+# O deploy após o merge fica no workflow deploy.yml.
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
