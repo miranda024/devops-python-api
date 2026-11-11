@@ -152,11 +152,11 @@ Security Group da instância: entrada TCP `22` (SSH, autenticação somente por 
 
 ## 8. Endereço da API publicada
 
-- API: `http://<IP-PUBLICO-DA-EC2>/`
-- Swagger: `http://<IP-PUBLICO-DA-EC2>/docs`
-- Versão implantada: `http://<IP-PUBLICO-DA-EC2>/version`
+- API: `http://54.91.109.156/`
+- Swagger: `http://54.91.109.156/docs`
+- Versão implantada: `http://54.91.109.156/version`
 
-> O IP público da instância do AWS Academy muda quando o laboratório é reiniciado.
+> O IP público da instância do AWS Academy muda quando o laboratório é reiniciado. As evidências 05 e 06 foram capturadas com o IP anterior (54.90.188.167).
 
 ## 9. Evidências da execução das pipelines
 
@@ -164,22 +164,30 @@ As capturas de tela estão em [`docs/evidencias/`](docs/evidencias/).
 
 | Evidência | Arquivo |
 |---|---|
-| CI executada com sucesso no Pull Request | `docs/evidencias/01-ci-pr.png` |
-| Imagem publicada no ECR com a tag do commit | `docs/evidencias/02-ecr.png` |
-| Pipeline de deploy executada com sucesso | `docs/evidencias/03-deploy.png` |
-| Contêiner em execução na EC2 (`docker ps`) | `docs/evidencias/04-ec2-docker-ps.png` |
-| API acessível pelo navegador — versão 1.0.0 | `docs/evidencias/05-api-v1.png` |
-| API atualizada automaticamente — versão 1.1.0 | `docs/evidencias/06-api-v2.png` |
+| CI executada com sucesso no Pull Request | [01-ci-pr.png](docs/evidencias/01-ci-pr.png) |
+| Imagens publicadas no ECR com a tag do commit (1.1.0 e 1.0.0) | [02-ecr.png](docs/evidencias/02-ecr.png), [02b-ecr-tag-v1.png](docs/evidencias/02b-ecr-tag-v1.png) |
+| Pipeline de deploy executada com sucesso | [03-deploy.png](docs/evidencias/03-deploy.png) |
+| Contêiner em execução na EC2 (`docker ps`) | [04-ec2-docker-ps.png](docs/evidencias/04-ec2-docker-ps.png) |
+| API acessível pelo navegador — versão 1.0.0 (commit `dc541de`) | [05-api-v1.png](docs/evidencias/05-api-v1.png) |
+| API atualizada automaticamente — versão 1.1.0 (commit `7ca1e11`) | [06-api-v2.png](docs/evidencias/06-api-v2.png) |
+| Deploy disparado automaticamente pelo merge do PR #3 | [07-deploy-automatico-pr3.png](docs/evidencias/07-deploy-automatico-pr3.png) |
+| Pull Request #2 com os commits da implementação | [08-pull-request-2.png](docs/evidencias/08-pull-request-2.png) |
+| EC2 com Docker instalado e acesso ao ECR via IAM Role | [09-ec2-docker-iam-role.png](docs/evidencias/09-ec2-docker-iam-role.png) |
+| Credenciais armazenadas em GitHub Secrets | [10-github-secrets.png](docs/evidencias/10-github-secrets.png) |
+| Proteção da branch `main` (PR e status checks obrigatórios) | [11-protecao-branch-main.png](docs/evidencias/11-protecao-branch-main.png) |
+| Instância EC2 criada para hospedar a aplicação | [12-ec2-instancia.png](docs/evidencias/12-ec2-instancia.png) |
+| Deploy após reinício do laboratório (novo IP) | [13-deploy-apos-reinicio-lab.png](docs/evidencias/13-deploy-apos-reinicio-lab.png) |
+| API respondendo no endereço atual | [14-api-ip-atual.png](docs/evidencias/14-api-ip-atual.png) |
 
 Pull Requests:
 
-- PR 1 — implementação da pipeline: `<link do PR>`
-- PR 2 — atualização da versão: `<link do PR>`
+- PR #2 — implementação da pipeline CI/CD: <https://github.com/miranda024/devops-python-api/pull/2>
+- PR #3 — atualização da API para a versão 1.1.0: <https://github.com/miranda024/devops-python-api/pull/3>
 
 ## 10. Como verificar a versão implantada
 
 ```bash
-curl http://<IP-PUBLICO-DA-EC2>/version
+curl http://54.91.109.156/version
 # {"version":"1.1.0","commit":"<sha completo do commit>"}
 ```
 
